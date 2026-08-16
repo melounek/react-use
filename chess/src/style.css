@@ -277,7 +277,7 @@ button { cursor: pointer; border: 0; background: none; }
 /* ------------------------------------------------------------------ game */
 
 .game { padding: 0; }
-.game .col-board { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.game .col-board { display: flex; flex-direction: column; flex: 1; min-height: 0; --board-size: min(100%, calc(100dvh - 250px)); }
 /* Two auto margins split the leftover height evenly, so the board group sits
    centred above the nav bar instead of clinging to the top of the screen. */
 .game #bar-top { margin-top: auto; }
@@ -327,7 +327,7 @@ button { cursor: pointer; border: 0; background: none; }
 
 .board {
   position: relative;
-  width: min(100%, calc(100dvh - 250px));
+  width: var(--board-size, 100%);
   aspect-ratio: 1;
   touch-action: none;
   user-select: none;
@@ -568,10 +568,14 @@ textarea.code-box { color: var(--text); }
 @media (min-width: 900px) and (min-height: 620px) {
   .app { max-width: 1000px; }
   .game.on { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 26px; align-items: center; padding: 20px; }
-  .game .col-board { flex: none; }
+  .game .col-board { flex: none; --board-size: min(100%, calc(100dvh - 300px)); }
   .game #bar-top { margin-top: 0; }
   .game .navbar { margin-top: 12px; }
-  .board { width: min(100%, calc(100dvh - 300px)); }
+  /* Keep the player bars flush with the board edges, not the column edges. */
+  .game .bar, .game .banner { width: var(--board-size); margin-inline: auto; }
+  .game .navbar { width: var(--board-size); margin-inline: auto; }
+  .game .col-side { min-height: 340px; }
+  #moves-side { flex: 1; max-height: none; }
   .game .col-side {
     display: flex; flex-direction: column; gap: 14px; align-self: center;
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px;
