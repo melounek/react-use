@@ -3,6 +3,10 @@ name: Deploy Airplane Chess
 # Publishes chess/index.html to GitHub Pages so the game can be opened on a
 # phone. The build has no dependencies — chess/build.js only concatenates
 # chess/src/* into a single self-contained HTML file.
+#
+# One-time setup: Settings -> Pages -> Build and deployment -> Source:
+# "GitHub Actions". The workflow token may deploy to Pages but may not create
+# the Pages site, so the first enablement has to happen in the repo settings.
 
 on:
   push:

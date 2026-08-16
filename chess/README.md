@@ -40,6 +40,31 @@ node chess/test/perft.js
 Pokrývá šest standardních testovacích pozic do hloubky 4–5 (startpos depth 5 =
 4 865 609 uzlů), plus SAN zápis, mat a pat.
 
+## Kde hru otevřít
+
+Hraje se z jednoho souboru, takže stačí jakýkoliv statický hosting s HTTPS —
+HTTPS je nutné, protože WebRTC i schránka fungují jen v secure contextu.
+
+**Hned, bez nastavování** — githack servíruje soubor přímo z tohohle repa se
+správným `Content-Type: text/html`:
+
+```
+https://raw.githack.com/melounek/react-use/claude/web-chess-local-multiplayer-nlfp6f/chess/index.html
+```
+
+Verze připnutá na commit (rychlejší, cachovaná, neměnná):
+
+```
+https://rawcdn.githack.com/melounek/react-use/<commit-sha>/chess/index.html
+```
+
+**GitHub Pages** — trvalá adresa `https://melounek.github.io/react-use/`.
+Workflow `.github/workflows/chess-pages.yml` je připravený, ale Pages je potřeba
+jednou zapnout ručně: *Settings → Pages → Build and deployment → Source:
+**GitHub Actions***. Token workflow smí do Pages nasazovat, ale nesmí je založit
+(`Create Pages site failed: Resource not accessible by integration`), proto to
+kliknutí nejde obejít. Po zapnutí stačí workflow spustit znovu.
+
 ## Build
 
 Zdroje jsou rozdělené v `src/`, build je slepí do dvou výstupů:
