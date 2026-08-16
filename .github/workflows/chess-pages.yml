@@ -1,0 +1,60 @@
+name: Deploy Airplane Chess
+
+# Publishes chess/index.html to GitHub Pages so the game can be opened on a
+# phone. The build has no dependencies — chess/build.js only concatenates
+# chess/src/* into a single self-contained HTML file.
+
+on:
+  push:
+    branches:
+      - claude/web-chess-local-multiplayer-nlfp6f
+    paths:
+      - 'chess/**'
+      - '.github/workflows/chess-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: chess-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify the rules engine
+        run: node chess/test/perft.js
+
+      - name: Build the bundle
+        run: node chess/build.js
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp chess/index.html _site/index.html
+          cp chess/index.html _site/404.html
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
