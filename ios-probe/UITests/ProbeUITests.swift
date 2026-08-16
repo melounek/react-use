@@ -24,12 +24,14 @@ final class ProbeUITests: XCTestCase {
         XCTAssertEqual(counter.label, "iOS probe — tapped 0×")
         snap(app, "01-launch")
 
+        // The squares surface as StaticText, not otherElements — the UI
+        // hierarchy dump attached to the first run showed the real element type.
         // e2 in this layout is index 52, e4 is index 36.
-        app.otherElements["sq-52"].firstMatch.tap()
+        app.staticTexts["sq-52"].firstMatch.tap()
         snap(app, "02-selected-e2")
         XCTAssertEqual(counter.label, "iOS probe — tapped 1×")
 
-        app.otherElements["sq-36"].firstMatch.tap()
+        app.staticTexts["sq-36"].firstMatch.tap()
         snap(app, "03-selected-e4")
         XCTAssertEqual(counter.label, "iOS probe — tapped 2×")
     }
