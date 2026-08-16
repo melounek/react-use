@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ios-probe
+  cancel-in-progress: true
+
 jobs:
   simulator:
     runs-on: macos-latest
@@ -51,44 +55,31 @@ jobs:
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
           echo "Selected:$LINE"
 
-      - name: Build for the simulator
+      # xcodebuild owns the simulator lifecycle here. Booting it by hand with
+      # `simctl bootstatus` hung for over ten minutes on the runner, and the
+      # test action boots, installs and launches on its own anyway.
+      - name: Build and test in the simulator
         run: |
-          xcodebuild build-for-testing \
-            -project ProbeApp.xcodeproj \
-            -scheme ProbeApp \
-            -destination "id=${{ steps.sim.outputs.udid }}" \
-            -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO
-
-      - name: Boot, install and launch
-        run: |
-          xcrun simctl boot "${{ steps.sim.outputs.udid }}" || true
-          xcrun simctl bootstatus "${{ steps.sim.outputs.udid }}" -b
-          APP=$(find build/Build/Products -name 'ProbeApp.app' -maxdepth 3 | head -1)
-          echo "app bundle: $APP"
-          xcrun simctl install booted "$APP"
-          xcrun simctl launch booted dev.airplanechess.ProbeApp
-          sleep 6
           mkdir -p ../shots
-          xcrun simctl io booted screenshot ../shots/simctl-01-launch.png
-
-      - name: Run the UI test
-        run: |
-          xcodebuild test-without-building \
+          set -o pipefail
+          xcodebuild test \
             -project ProbeApp.xcodeproj \
             -scheme ProbeApp \
             -destination "id=${{ steps.sim.outputs.udid }}" \
             -derivedDataPath build \
-            -resultBundlePath ../shots/Result.xcresult
+            -resultBundlePath ../shots/Result.xcresult \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tail -80
 
-      - name: Export screenshots taken by the test
+      - name: Export the screenshots the test attached
         if: always()
         run: |
           xcrun xcresulttool export attachments \
             --path ../shots/Result.xcresult \
-            --output-path ../shots/attachments || echo "attachment export unavailable on this Xcode"
-          xcrun simctl io booted screenshot ../shots/simctl-02-final.png || true
-          ls -R ../shots | head -50
+            --output-path ../shots/attachments \
+            || echo "attachment export failed on this Xcode version"
+          # Best effort raw grab; harmless if the device already shut down.
+          xcrun simctl io booted screenshot ../shots/simctl-final.png || true
+          find ../shots -maxdepth 3 -type f | head -40
 
       - uses: actions/upload-artifact@v4
         if: always()
