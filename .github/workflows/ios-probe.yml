@@ -1,0 +1,103 @@
+name: iOS probe
+
+# Feasibility probe: builds a SwiftUI app on a GitHub-hosted macOS runner, runs
+# it in the iOS Simulator, drives it with XCUITest and uploads screenshots.
+# This is the loop that stands in for a local Xcode — the agent's own container
+# is Linux, where Xcode and the Simulator cannot run at all.
+
+on:
+  push:
+    branches:
+      - claude/web-chess-local-multiplayer-nlfp6f
+    paths:
+      - 'ios-probe/**'
+      - '.github/workflows/ios-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: ios-probe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain versions
+        run: |
+          sw_vers
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate the Xcode project
+        run: xcodegen generate
+
+      - name: Pick a simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+import json, sys
+data = json.load(sys.stdin)["devices"]
+runtimes = sorted((k for k in data if "iOS" in k), reverse=True)
+for rt in runtimes:
+    for dev in data[rt]:
+        if dev.get("isAvailable") and "iPhone" in dev["name"]:
+            print(dev["udid"], dev["name"], rt, sep="|")
+            raise SystemExit
+raise SystemExit("no iPhone simulator available")
+')
+          echo "udid=${UDID%%|*}" >> "$GITHUB_OUTPUT"
+          echo "Selected: $UDID"
+
+      - name: Build for the simulator
+        run: |
+          xcodebuild build-for-testing \
+            -project ProbeApp.xcodeproj \
+            -scheme ProbeApp \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Boot, install and launch
+        run: |
+          xcrun simctl boot "${{ steps.sim.outputs.udid }}" || true
+          xcrun simctl bootstatus "${{ steps.sim.outputs.udid }}" -b
+          APP=$(find build/Build/Products -name 'ProbeApp.app' -maxdepth 3 | head -1)
+          echo "app bundle: $APP"
+          xcrun simctl install booted "$APP"
+          xcrun simctl launch booted dev.airplanechess.ProbeApp
+          sleep 6
+          mkdir -p ../shots
+          xcrun simctl io booted screenshot ../shots/simctl-01-launch.png
+
+      - name: Run the UI test
+        run: |
+          xcodebuild test-without-building \
+            -project ProbeApp.xcodeproj \
+            -scheme ProbeApp \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build \
+            -resultBundlePath ../shots/Result.xcresult
+
+      - name: Export screenshots taken by the test
+        if: always()
+        run: |
+          xcrun xcresulttool export attachments \
+            --path ../shots/Result.xcresult \
+            --output-path ../shots/attachments || echo "attachment export unavailable on this Xcode"
+          xcrun simctl io booted screenshot ../shots/simctl-02-final.png || true
+          ls -R ../shots | head -50
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-simulator-screenshots
+          path: shots
+          retention-days: 7
