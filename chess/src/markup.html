@@ -1,0 +1,238 @@
+<div class="app">
+
+  <!-- ============================================================ HOME -->
+  <section class="screen home on" id="screen-home">
+    <div class="hero">
+      <div class="mark">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <g fill="var(--accent)">
+            <path d="M30 4h4v6h6v4h-6v6h-4v-6h-6v-4h6z"/>
+            <path d="M32 20c-4.4 0-8 3.6-8 8 0 4 1 7 1.6 11l2 20c.4 3 1.6 5 4.4 5s4-2 4.4-5l2-20c.6-4 1.6-7 1.6-11 0-4.4-3.6-8-8-8z"/>
+            <path d="M24 34 4 44v6l20-6zM40 34l20 10v6l-20-6z"/>
+            <path d="M27 52 16 57v4l11-3zM37 52l11 5v4l-11-3z"/>
+          </g>
+        </svg>
+      </div>
+      <h1 class="wordmark">Airplane Chess</h1>
+      <p class="tagline">Hraj offline kdekoliv &middot; Internet není potřeba</p>
+    </div>
+
+    <div class="field">
+      <span class="label">Režim hry</span>
+      <div class="grid-2">
+        <button class="mode" id="mode-local" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18.5h4"/>
+          </svg>
+          <span class="t">Pass &amp; Play</span>
+          <span class="s">1 zařízení</span>
+        </button>
+        <button class="mode" id="mode-link" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M2.5 9a15 15 0 0 1 19 0M5.5 12.5a10.5 10.5 0 0 1 13 0M8.5 16a6 6 0 0 1 7 0"/>
+            <circle cx="12" cy="19.5" r="1.2" fill="currentColor" stroke="none"/>
+          </svg>
+          <span class="t">2 zařízení</span>
+          <span class="s">Bluetooth / Wi-Fi</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="field" id="field-name" hidden>
+      <span class="label">Tvoje jméno</span>
+      <label class="input-row">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+        </svg>
+        <input id="name" maxlength="18" placeholder="Hráč" autocomplete="nickname" spellcheck="false">
+      </label>
+    </div>
+
+    <div class="field">
+      <span class="label" id="label-side">Hraješ za</span>
+      <div class="seg" id="side">
+        <button data-side="w" aria-pressed="false"><span class="ico">♔</span>Bílé</button>
+        <button data-side="random" aria-pressed="true"><span class="ico">🎲</span>Náhodně</button>
+        <button data-side="b" aria-pressed="false"><span class="ico">♚</span>Černé</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="label">Tempo hry</span>
+      <div class="chips" id="tc"></div>
+    </div>
+
+    <button class="btn wide" id="start-local">Začít hru</button>
+
+    <div class="field" id="field-peers" hidden>
+      <span class="label">Hráči v okolí</span>
+      <div class="panel" id="peers">
+        <div class="searching"><span class="spinner"></span><span>Hledám hráče v okolí…</span></div>
+      </div>
+      <p class="hint" id="peers-hint"></p>
+      <div class="divider">nebo</div>
+      <div class="row" style="display:flex;gap:10px">
+        <button class="btn ghost" id="host-code" style="flex:1">Vytvořit pozvánku</button>
+        <button class="btn ghost" id="join-code" style="flex:1">Mám kód</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ GAME -->
+  <section class="screen game" id="screen-game">
+    <div class="col-board">
+      <div class="bar" id="bar-top">
+        <span class="turn-dot" data-dot></span>
+        <span class="id"><span class="nm"></span><span class="taken"></span></span>
+        <span class="clock">10:00</span>
+      </div>
+
+      <div class="board-wrap">
+        <div class="board" id="board">
+          <div class="squares" id="squares"></div>
+          <div class="hints" id="hints"></div>
+          <div class="pieces" id="pieces"></div>
+        </div>
+      </div>
+
+      <div class="bar" id="bar-bottom">
+        <span class="turn-dot" data-dot></span>
+        <span class="id"><span class="nm"></span><span class="taken"></span></span>
+        <span class="clock">10:00</span>
+      </div>
+
+      <div class="banner hide" id="banner"><span class="txt"></span></div>
+
+      <nav class="navbar">
+        <button class="nav" id="nav-menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          Menu
+        </button>
+        <button class="nav accent" id="nav-rematch">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v4h4"/></svg>
+          Odveta
+        </button>
+        <button class="nav" id="nav-prev" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+          Zpět
+        </button>
+        <button class="nav" id="nav-next" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+          Vpřed
+        </button>
+      </nav>
+    </div>
+
+    <aside class="col-side">
+      <span class="label">Notace</span>
+      <div class="moves" id="moves-side"></div>
+      <button class="btn ghost" id="side-menu">Menu hry</button>
+    </aside>
+  </section>
+</div>
+
+<!-- =========================================================== OVERLAYS -->
+
+<div class="veil" id="veil-promo">
+  <div class="card">
+    <h2>Proměna pěšce</h2>
+    <p>Vyber figuru, na kterou se pěšec promění.</p>
+    <div class="promo-row" id="promo-row"></div>
+  </div>
+</div>
+
+<div class="veil" id="veil-result">
+  <div class="card">
+    <span class="result-badge" id="result-score">1&ndash;0</span>
+    <h2 id="result-title">Mat</h2>
+    <p id="result-text"></p>
+    <div class="row">
+      <button class="btn ghost" id="result-review">Prohlédnout partii</button>
+      <button class="btn" id="result-rematch">Odveta</button>
+    </div>
+    <button class="btn ghost wide" id="result-home">Zpět na úvod</button>
+  </div>
+</div>
+
+<div class="veil" id="veil-invite">
+  <div class="card">
+    <h2 id="invite-title">Pozvánka do hry</h2>
+    <p id="invite-text"></p>
+    <div class="row">
+      <button class="btn ghost" id="invite-decline">Odmítnout</button>
+      <button class="btn" id="invite-accept">Přijmout</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="veil-confirm">
+  <div class="card">
+    <h2 id="confirm-title">Opravdu?</h2>
+    <p id="confirm-text"></p>
+    <div class="row">
+      <button class="btn ghost" id="confirm-no">Zpět do hry</button>
+      <button class="btn" id="confirm-yes">Potvrdit</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil" id="veil-wait">
+  <div class="card">
+    <h2>Čekám na soupeře</h2>
+    <p id="wait-text">Pozvánka odeslána. Čekám, až ji soupeř přijme…</p>
+    <div class="searching"><span class="spinner"></span><span id="wait-sub">Spojuji…</span></div>
+    <button class="btn ghost wide" id="wait-cancel">Zrušit</button>
+  </div>
+</div>
+
+<div class="veil bottom" id="veil-connect">
+  <div class="card">
+    <h2 id="connect-title">Přímé spojení</h2>
+    <p id="connect-lead"></p>
+    <ol class="steps" id="connect-steps"></ol>
+    <div id="connect-body"></div>
+    <div class="row">
+      <button class="btn ghost" id="connect-cancel">Zavřít</button>
+      <button class="btn" id="connect-action">Pokračovat</button>
+    </div>
+  </div>
+</div>
+
+<div class="veil bottom" id="veil-menu">
+  <div class="card">
+    <h2>Menu hry</h2>
+    <div class="moves" id="moves-sheet"></div>
+    <div class="menu-list">
+      <button class="menu-item" id="mi-flip">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M7 8l5-5 5 5M7 16l5 5 5-5"/></svg>
+        Otočit šachovnici
+      </button>
+      <button class="menu-item" id="mi-auto">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M10 17h4"/></svg>
+        Automatické otáčení <span class="kbd" id="auto-state">zap</span>
+      </button>
+      <button class="menu-item" id="mi-sound">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v6h3l4 3.5v-13L8 9z"/><path d="M16 9.5a4 4 0 0 1 0 5"/></svg>
+        Zvuky <span class="kbd" id="sound-state">zap</span>
+      </button>
+      <button class="menu-item" id="mi-pgn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="12" height="16" rx="2"/><path d="M16 21H6a2 2 0 0 1-2-2V7"/></svg>
+        Kopírovat PGN
+      </button>
+      <button class="menu-item" id="mi-draw">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span id="draw-label">Nabídnout remízu</span>
+      </button>
+      <button class="menu-item danger" id="mi-resign">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4h9l-1 3h6l-1.5 4L18 15h-7l1-3H5"/></svg>
+        Vzdát partii
+      </button>
+      <button class="menu-item danger" id="mi-exit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10"/></svg>
+        Ukončit a zpět na úvod
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
